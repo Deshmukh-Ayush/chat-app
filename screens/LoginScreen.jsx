@@ -1,16 +1,59 @@
 import { View, Text, Image, Dimensions, TouchableOpacity } from "react-native";
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState, useLayoutEffect, useReducer } from "react";
 import { BGImage, Logo } from "../assets";
 import { UserTextInput } from "../components";
 import { useNavigation } from "@react-navigation/native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { firebaseAuth, firestoreDB } from "../config/firebase.config";
+import codegenNativeCommands from "react-native/Libraries/Utilities/codegenNativeCommands";
+import { doc, getDoc } from "firebase/firestore";
 
 const LoginScreen = () => {
   const screenWidth = Math.round(Dimensions.get("window").width);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [getEmailValidationStatus, setGetEmailValidationStatus] = useState(false);
+
+
+  const [alert, setAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState(null)
 
   const navigation = useNavigation();
+
+  const handleLogin = async () => {
+    if(getEmailValidationStatus && email !== ""){
+      await signInWithEmailAndPassword(firebaseAuth, email, password).then(userCred => {
+        if(userCred) {
+          console.log("User Id", userCred?.user.uid)
+          getDoc(doc(firestoreDB, "users", userCred?.user.uid)).then(docSnap => {
+            if(docSnap.exists()) {
+              console.log("User Data: ", docSnap.data())
+            } else {
+              setAlert(true)
+              setAlertMessage("User Not Found")
+              setInterval(() => {
+                setAlert(false)
+              }, 2000)
+            }
+          })
+        }
+      }).catch(err => {
+        console.log("Error: ", err.message);
+        if(err.message.includes("invalid-credential")){
+          setAlert(true)
+          setAlertMessage("Password mismatch")
+        } else {
+          setAlert(true)
+          setAlertMessage("Invalid Email Address")
+        }
+        setInterval(() => {
+          setAlert(false)
+        }, 2000)
+      })
+    }
+  } 
+
   return (
     <View className="flex-1 items-center justify-start">
       <Image
@@ -31,23 +74,30 @@ const LoginScreen = () => {
 
         <View className="w-full flex items-center justify-center">
           {/* alert */}
+
+          {alert && (
+            <Text className="text-base text-red-600">{alertMessage}</Text>
+          )}
+
+
           {/* email */}
           <UserTextInput
             placeholder="Email"
             isPass={false}
             setStateValue={setEmail}
+            setGetEmailValidationStatus = {setGetEmailValidationStatus}
           />
 
           {/* password */}
           <UserTextInput
             placeholder="Password"
             isPass={true}
-            setStateValue={setEmail}
+            setStateValue={setPassword}
           />
 
           {/* login button */}
 
-          <TouchableOpacity className="w-full px-4 py-2 rounded-xl bg-primary my-3 flex items-center justify-center">
+          <TouchableOpacity onPress={handleLogin} className="w-full px-4 py-2 rounded-xl bg-primary my-3 flex items-center justify-center">
             <Text className="py-2 text-white text-xl font-semibold">
               Sign In
             </Text>
