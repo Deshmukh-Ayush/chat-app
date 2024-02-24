@@ -6,7 +6,9 @@ import { useNavigation } from "@react-navigation/native";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { firebaseAuth, firestoreDB } from "../config/firebase.config";
 import codegenNativeCommands from "react-native/Libraries/Utilities/codegenNativeCommands";
-import { doc, getDoc } from "firebase/firestore";
+import { disablePersistentCacheIndexAutoCreation, doc, getDoc } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import {SET_USER} from "../context/actions/userAction"
 
 const LoginScreen = () => {
   const screenWidth = Math.round(Dimensions.get("window").width);
@@ -20,7 +22,8 @@ const LoginScreen = () => {
   const [alertMessage, setAlertMessage] = useState(null)
 
   const navigation = useNavigation();
-
+  const dispatch = useDispatch();
+  
   const handleLogin = async () => {
     if(getEmailValidationStatus && email !== ""){
       await signInWithEmailAndPassword(firebaseAuth, email, password).then(userCred => {
@@ -29,6 +32,7 @@ const LoginScreen = () => {
           getDoc(doc(firestoreDB, "users", userCred?.user.uid)).then(docSnap => {
             if(docSnap.exists()) {
               console.log("User Data: ", docSnap.data())
+              dispatch(SET_USER(docSnap.data()));
             } else {
               setAlert(true)
               setAlertMessage("User Not Found")
