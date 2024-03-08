@@ -1,5 +1,5 @@
 import { View, Text, Image, Dimensions, TouchableOpacity } from "react-native";
-import React, { useState, useLayoutEffect, useReducer } from "react";
+import React, { useState, useLayoutEffect, useReducer, useCallback } from "react";
 import { BGImage, Logo } from "../assets";
 import { UserTextInput } from "../components";
 import { useNavigation } from "@react-navigation/native";
