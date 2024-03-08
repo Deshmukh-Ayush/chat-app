@@ -72,7 +72,7 @@ const AddToChatScreen = () => {
                                 onChangeText={(text) => setAddChat(text)}/>
                 {/* Icon */}
                 <TouchableOpacity onPress={createNewChat}>
-                    <FontAwesome name='send' size={24} color="777" />
+                    <FontAwesome name='send' size={24} color={"#777"} />
                 </TouchableOpacity>
             </View>
         </View>
