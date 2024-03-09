@@ -26,7 +26,8 @@ const RegisterScreen = () => {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(avatars[0]?.image.asset.url);
   const [isAvatarMenu, setIsAvatarMenu] = useState(false);
-  const [getEmailValidationStatus, setGetEmailValidationStatus] = useState(false);
+  const [getEmailValidationStatus, setGetEmailValidationStatus] =
+    useState(false);
 
   const navigation = useNavigation();
 
@@ -36,20 +37,24 @@ const RegisterScreen = () => {
   };
 
   const handleSignUp = async () => {
-    if(getEmailValidationStatus && email !== ""){
-      await createUserWithEmailAndPassword(firebaseAuth, email, password).then(userCred => {
-        const data = {
-          _id : userCred?.user.uid,
-          fullName : name,
-          profilePic : avatar,
-          providerData : userCred.user.providerData[0]
+    if (getEmailValidationStatus && email !== "") {
+      await createUserWithEmailAndPassword(firebaseAuth, email, password).then(
+        (userCred) => {
+          const data = {
+            _id: userCred?.user.uid,
+            fullName: name,
+            profilePic: avatar,
+            providerData: userCred.user.providerData[0],
+          };
+          setDoc(doc(firestoreDB, "users", userCred?.user.uid), data).then(
+            () => {
+              navigation.navigate("LoginScreen");
+            }
+          );
         }
-        setDoc(doc(firestoreDB, 'users', userCred?.user.uid), data).then(() => {
-          navigation.navigate("LoginScreen");
-        });
-      })
+      );
     }
-  }
+  };
 
   return (
     <View className="flex-1 items-center justify-start">
@@ -133,7 +138,7 @@ const RegisterScreen = () => {
             placeholder="Email"
             isPass={false}
             setStateValue={setEmail}
-            setGetEmailValidationStatus = {setGetEmailValidationStatus}
+            setGetEmailValidationStatus={setGetEmailValidationStatus}
           />
 
           {/* password */}
@@ -145,7 +150,10 @@ const RegisterScreen = () => {
 
           {/* login button */}
 
-          <TouchableOpacity onPress={handleSignUp} className="w-full px-4 py-2 rounded-xl bg-primary my-3 flex items-center justify-center">
+          <TouchableOpacity
+            onPress={handleSignUp}
+            className="w-full px-4 py-2 rounded-xl bg-primary my-3 flex items-center justify-center"
+          >
             <Text className="py-2 text-white text-xl font-semibold">
               Register Now
             </Text>
